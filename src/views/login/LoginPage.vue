@@ -2,6 +2,8 @@
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 const isRegister = ref(true)
+const form = ref()
+
 // 整个的用于提交的form数据对象
 const formModel = ref({
   username: '',
@@ -51,6 +53,12 @@ const rules = {
       trigger: 'blur'
     }
   ]
+}
+
+const register = async () => {
+  // 注册成功之前，先进行校验，校验成功 → 请求，校验失败 → 自动提示
+  await form.value.validate()
+  console.log('开始注册请求')
 }
 </script>
 
@@ -111,7 +119,12 @@ const rules = {
           ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button class="button" type="primary" auto-insert-space>
+          <el-button
+            @click="register"
+            class="button"
+            type="primary"
+            auto-insert-space
+          >
             注册
           </el-button>
         </el-form-item>
