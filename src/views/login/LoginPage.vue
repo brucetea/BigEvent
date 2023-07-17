@@ -1,11 +1,37 @@
 <script setup>
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref } from 'vue'
-const isRegister = ref(false)
+const isRegister = ref(true)
+// 整个的用于提交的form数据对象
+const formModel = ref({
+  username: '',
+  password: '',
+  repassword: ''
+})
+// 整个表单的校验规则
+// 1. 非空校验 required: true   message消息提示，trigger触发校验的时机 blur change
+// 2. 长度校验 min:xx, max: xx
+// 3. 正则校验 pattern: 正则规则    \S 非空字符
+const rules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 5, max: 10, message: '用户名必须是 5-10位 的字符', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    {
+      pattern: /^\S{6,15}$/,
+      message: '密码必须是 6-15位 的非空字符',
+      trigger: 'blur'
+    }
+  ]
+}
 </script>
 
 <template>
-  <!-- el-row表示一行，一行分成24份 
+  <!-- 
+    1. 结构相关
+      el-row表示一行，一行分成24份 
        el-col表示列  
        (1) :span="12"  代表在一行中，占12份 (50%)
        (2) :span="6"   表示在一行中，占6份  (25%)
@@ -14,20 +40,37 @@ const isRegister = ref(false)
        el-form 整个表单组件
        el-form-item 表单的一行 （一个表单域）
        el-input 表单元素（输入框）
+    2. 校验相关
+       (1) el-form => :model="ruleForm"      绑定的整个form的数据对象 { xxx, xxx, xxx }
+       (2) el-form => :rules="rules"         绑定的整个rules规则对象  { xxx, xxx, xxx }
+       (3) 表单元素 => v-model="ruleForm.xxx" 给表单元素，绑定form的子属性
+       (4) el-form-item => prop配置生效的是哪个校验规则 (和rules中的字段要对应)
   -->
   <el-row class="login-page">
     <el-col :span="12" class="bg"></el-col>
     <el-col :span="6" :offset="3" class="form">
       <!-- 注册相关表单 -->
-      <el-form ref="form" size="large" autocomplete="off" v-if="isRegister">
+      <el-form
+        :model="formModel"
+        :rules="rules"
+        ref="form"
+        size="large"
+        autocomplete="off"
+        v-if="isRegister"
+      >
         <el-form-item>
           <h1>注册</h1>
         </el-form-item>
-        <el-form-item>
-          <el-input :prefix-icon="User" placeholder="请输入用户名"></el-input>
-        </el-form-item>
-        <el-form-item>
+        <el-form-item prop="username">
           <el-input
+            v-model="formModel.username"
+            :prefix-icon="User"
+            placeholder="请输入用户名"
+          ></el-input>
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input
+            v-model="formModel.password"
             :prefix-icon="Lock"
             type="password"
             placeholder="请输入密码"
