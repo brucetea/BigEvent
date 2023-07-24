@@ -4,7 +4,13 @@ import ChannelSelect from './ChannelSelect.vue'
 import { Plus } from '@element-plus/icons-vue'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
-import { artPublishService } from '@/api/article'
+import {
+  artPublishService,
+  artGetDetailService,
+  artEditService
+} from '@/api/article'
+import { baseURL } from '@/utils/request'
+import axios from 'axios'
 // 控制抽屉显示隐藏
 const visibleDrawer = ref(false)
 
@@ -44,7 +50,10 @@ const onPublish = async (state) => {
   // 发请求
   if (formModel.value.id) {
     // 编辑操作
-    console.log('编辑操作')
+    await artEditService(fd)
+    ElMessage.success('修改成功')
+    visibleDrawer.value = false
+    emit('success', 'edit')
   } else {
     // 添加操作
     await artPublishService(fd)
@@ -60,17 +69,50 @@ const onPublish = async (state) => {
 // open({ id, ..., ... })  => 表单需要渲染，说明是编辑
 // open调用后，可以打开抽屉
 const editorRef = ref()
-const open = (row) => {
+const open = async (row) => {
   visibleDrawer.value = true // 显示抽屉
 
   if (row.id) {
     // 需要基于 row.id 发送请求，获取编辑对应的详情数据，进行回显
-    console.log('编辑回显')
+    const res = await artGetDetailService(row.id)
+    formModel.value = res.data.data
+    // 图片需要单独处理回显
+    imgUrl.value = baseURL + formModel.value.cover_img
+    // 注意：提交给后台，需要的数据格式，是file对象格式
+    // 需要将网络图片地址 => 转换成 file对象，存储起来, 将来便于提交
+    const file = await imageUrlToFileObject(
+      imgUrl.value,
+      formModel.value.cover_img
+    )
+    formModel.value.cover_img = file
   } else {
     formModel.value = { ...defaultForm } // 基于默认的数据，重置form数据
     // 这里重置了表单的数据，但是图片上传img地址，富文本编辑器内容 => 需要手动重置
     imgUrl.value = ''
     editorRef.value.setHTML('')
+  }
+}
+
+// 将网络图片地址转换为 File 对象的函数
+async function imageUrlToFileObject(imageUrl, filename) {
+  try {
+    // 使用 Axios 下载图片数据
+    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' })
+
+    // 将下载的数据转换成 Blob 对象
+    const blob = new Blob([response.data], {
+      type: response.headers['content-type']
+    })
+
+    // 创建 File 对象
+    const file = new File([blob], filename, {
+      type: response.headers['content-type']
+    })
+
+    return file
+  } catch (error) {
+    console.error('Error converting image URL to File object:', error)
+    return null
   }
 }
 
