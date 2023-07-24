@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { Delete, Edit } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
+import ArticleEdit from './components/ArticleEdit.vue'
 import { artGetListService } from '@/api/article.js'
 import { formatTime } from '@/utils/format.js'
 const articleList = ref([]) // 文章列表
@@ -59,16 +60,14 @@ const onReset = () => {
   getArticleList()
 }
 
-// 控制抽屉显示隐藏
-const visibleDrawer = ref(false)
+const articleEditRef = ref()
 // 添加逻辑
 const onAddArticle = () => {
-  visibleDrawer.value = true
+  articleEditRef.value.open({})
 }
-
 // 编辑逻辑
 const onEditArticle = (row) => {
-  console.log(row)
+  articleEditRef.value.open(row)
 }
 
 // 删除逻辑
@@ -154,15 +153,8 @@ const onDeleteArticle = (row) => {
       style="margin-top: 20px; justify-content: flex-end"
     />
 
-    <!-- 抽屉 -->
-    <el-drawer
-      v-model="visibleDrawer"
-      title="大标题"
-      direction="rtl"
-      size="50%"
-    >
-      <span>Hi there!</span>
-    </el-drawer>
+    <!-- 添加编辑的抽屉 -->
+    <article-edit ref="articleEditRef"></article-edit>
   </page-container>
 </template>
 
