@@ -59,6 +59,13 @@ const onReset = () => {
   getArticleList()
 }
 
+// 控制抽屉显示隐藏
+const visibleDrawer = ref(false)
+// 添加逻辑
+const onAddArticle = () => {
+  visibleDrawer.value = true
+}
+
 // 编辑逻辑
 const onEditArticle = (row) => {
   console.log(row)
@@ -73,7 +80,7 @@ const onDeleteArticle = (row) => {
 <template>
   <page-container title="文章管理">
     <template #extra>
-      <el-button>添加文章</el-button>
+      <el-button type="primary" @click="onAddArticle">添加文章</el-button>
     </template>
 
     <!-- 表单区域 -->
@@ -146,6 +153,16 @@ const onDeleteArticle = (row) => {
       @current-change="onCurrentChange"
       style="margin-top: 20px; justify-content: flex-end"
     />
+
+    <!-- 抽屉 -->
+    <el-drawer
+      v-model="visibleDrawer"
+      title="大标题"
+      direction="rtl"
+      size="50%"
+    >
+      <span>Hi there!</span>
+    </el-drawer>
   </page-container>
 </template>
 
