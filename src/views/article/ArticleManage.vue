@@ -2,30 +2,43 @@
 import { ref } from 'vue'
 import { Delete, Edit } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
+import { artGetListService } from '@/api/article.js'
+import { formatTime } from '@/utils/format.js'
+const articleList = ref([]) // 文章列表
+const total = ref(0) // 总条数
 
-const articleList = ref([
-  {
-    id: 5961,
-    title: '新的文章啊',
-    pub_date: '2022-07-10 14:53:52.604',
-    state: '已发布',
-    cate_name: '体育'
-  },
-  {
-    id: 5962,
-    title: '新的文章啊',
-    pub_date: '2022-07-10 14:54:30.904',
-    state: '草稿',
-    cate_name: '体育'
-  }
-])
 // 定义请求参数对象
 const params = ref({
-  pagenum: 1,
-  pagesize: 5,
+  pagenum: 1, // 当前页
+  pagesize: 5, // 当前生效的每页条数
   cate_id: '',
   state: ''
 })
+
+// 基于params参数，获取文章列表
+const getArticleList = async () => {
+  const res = await artGetListService(params.value)
+  articleList.value = res.data.data
+  total.value = res.data.total
+}
+getArticleList()
+
+// 处理分页逻辑
+const onSizeChange = (size) => {
+  // console.log('当前每页条数', size)
+  // 只要是每页条数变化了，那么原本正在访问的当前页意义不大了，数据大概率已经不在原来那一页了
+  // 重新从第一页渲染即可
+  params.value.pagenum = 1
+  params.value.pagesize = size
+  // 基于最新的当前页 和 每页条数，渲染数据
+  getArticleList()
+}
+const onCurrentChange = (page) => {
+  // 更新当前页
+  params.value.pagenum = page
+  // 基于最新的当前页，渲染数据
+  getArticleList()
+}
 
 // 编辑逻辑
 const onEditArticle = (row) => {
@@ -75,7 +88,11 @@ const onDeleteArticle = (row) => {
         </template>
       </el-table-column>
       <el-table-column label="分类" prop="cate_name"></el-table-column>
-      <el-table-column label="发表时间" prop="pub_date"></el-table-column>
+      <el-table-column label="发表时间" prop="pub_date">
+        <template #default="{ row }">
+          {{ formatTime(row.pub_date) }}
+        </template>
+      </el-table-column>
       <el-table-column label="状态" prop="state"></el-table-column>
       <!-- 利用作用域插槽 row 可以获取当前行的数据 => v-for 遍历 item -->
       <el-table-column label="操作">
@@ -97,6 +114,19 @@ const onDeleteArticle = (row) => {
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 分页区域 -->
+    <el-pagination
+      v-model:current-page="params.pagenum"
+      v-model:page-size="params.pagesize"
+      :page-sizes="[2, 3, 5, 10]"
+      :background="true"
+      layout="jumper, total, sizes, prev, pager, next"
+      :total="total"
+      @size-change="onSizeChange"
+      @current-change="onCurrentChange"
+      style="margin-top: 20px; justify-content: flex-end"
+    />
   </page-container>
 </template>
 
