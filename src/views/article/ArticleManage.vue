@@ -74,6 +74,18 @@ const onEditArticle = (row) => {
 const onDeleteArticle = (row) => {
   console.log(row)
 }
+
+// 添加或者编辑 成功的回调
+const onSuccess = (type) => {
+  if (type === 'add') {
+    // 如果是添加，最好渲染最后一页
+    const lastPage = Math.ceil((total.value + 1) / params.value.pagesize)
+    // 更新成最大页码数，再渲染
+    params.value.pagenum = lastPage
+  }
+
+  getArticleList()
+}
 </script>
 
 <template>
@@ -154,7 +166,7 @@ const onDeleteArticle = (row) => {
     />
 
     <!-- 添加编辑的抽屉 -->
-    <article-edit ref="articleEditRef"></article-edit>
+    <article-edit ref="articleEditRef" @success="onSuccess"></article-edit>
   </page-container>
 </template>
 
