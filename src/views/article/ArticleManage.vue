@@ -6,6 +6,7 @@ import { artGetListService } from '@/api/article.js'
 import { formatTime } from '@/utils/format.js'
 const articleList = ref([]) // 文章列表
 const total = ref(0) // 总条数
+const loading = ref(false) // loading状态
 
 // 定义请求参数对象
 const params = ref({
@@ -17,9 +18,13 @@ const params = ref({
 
 // 基于params参数，获取文章列表
 const getArticleList = async () => {
+  loading.value = true
+
   const res = await artGetListService(params.value)
   articleList.value = res.data.data
   total.value = res.data.total
+
+  loading.value = false
 }
 getArticleList()
 
@@ -37,6 +42,20 @@ const onCurrentChange = (page) => {
   // 更新当前页
   params.value.pagenum = page
   // 基于最新的当前页，渲染数据
+  getArticleList()
+}
+
+// 搜索逻辑 => 按照最新的条件，重新检索，从第一页开始展示
+const onSearch = () => {
+  params.value.pagenum = 1 // 重置页面
+  getArticleList()
+}
+
+// 重置逻辑 => 将筛选条件清空，重新检索，从第一页开始展示
+const onReset = () => {
+  params.value.pagenum = 1 // 重置页面
+  params.value.cate_id = ''
+  params.value.state = ''
   getArticleList()
 }
 
@@ -75,13 +94,13 @@ const onDeleteArticle = (row) => {
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary">搜索</el-button>
-        <el-button>重置</el-button>
+        <el-button @click="onSearch" type="primary">搜索</el-button>
+        <el-button @click="onReset">重置</el-button>
       </el-form-item>
     </el-form>
 
     <!-- 表格区域 -->
-    <el-table :data="articleList">
+    <el-table :data="articleList" v-loading="loading">
       <el-table-column label="文章标题" prop="title">
         <template #default="{ row }">
           <el-link type="primary" :underline="false">{{ row.title }}</el-link>
