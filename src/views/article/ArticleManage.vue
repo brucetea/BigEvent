@@ -72,8 +72,8 @@ const onEditArticle = (row) => {
 
 // 删除逻辑
 const onDeleteArticle = async (row) => {
-  // console.log(row)
-  await ElMessageBox.confirm('此操作将永久删除该文章, 是否继续?', '提示', {
+  // 提示用户是否要删除
+  await ElMessageBox.confirm('此操作将永久删除该文件, 是否继续?', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
