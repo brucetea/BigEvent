@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { Delete, Edit } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
 import ArticleEdit from './components/ArticleEdit.vue'
-import { artGetListService } from '@/api/article.js'
+import { artGetListService, artDelService } from '@/api/article.js'
 import { formatTime } from '@/utils/format.js'
 const articleList = ref([]) // 文章列表
 const total = ref(0) // 总条数
@@ -71,8 +71,17 @@ const onEditArticle = (row) => {
 }
 
 // 删除逻辑
-const onDeleteArticle = (row) => {
-  console.log(row)
+const onDeleteArticle = async (row) => {
+  // console.log(row)
+  await ElMessageBox.confirm('此操作将永久删除该文章, 是否继续?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+  await artDelService(row.id)
+  ElMessage.success('删除成功')
+  // 重新渲染列表
+  getArticleList()
 }
 
 // 添加或者编辑 成功的回调
