@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref } from 'vue'
 import { Delete, Edit } from '@element-plus/icons-vue'
 import { artGetListService } from '../../api/article'
 import ChannelSelet from './components/ChannelSelet.vue'
@@ -7,12 +7,14 @@ import ChannelSelet from './components/ChannelSelet.vue'
 const articleList = ref([])
 const total = ref(0)
 
-const params = reactive({
+const params = ref({
   pagenum: 1, 
-  pagesize: 5
+  pagesize: 5,
+  cate_id:'',
+  state:''
 })
 const getArticleList = async () => {
-  const res = await artGetListService(params)
+  const res = await artGetListService(params.value)
   console.log(res)
   articleList.value = res.data.data
   total.value = res.data.total
@@ -22,7 +24,7 @@ getArticleList()
 
 const handleSizeChange=(page)=>{
   console.log(page)
-  params.pagenum = 1
+  params.value.pagenum = 1
   getArticleList()
 }
 
@@ -30,6 +32,19 @@ const handleCurrentChange=(page)=>{
   console.log(page)
   getArticleList()
 }
+
+const search = () => {
+  params.value.pagenum = 1
+  getArticleList()
+}
+
+const reset = () => {
+  params.value.cate_id = ''
+  params.value.state = ''
+  params.value.pagenum = 1
+  getArticleList()
+}
+
 </script>
 
 <template>
@@ -41,18 +56,18 @@ const handleCurrentChange=(page)=>{
     <!-- 表单区域 -->
     <el-form inline>
         <el-form-item label="文章分类:" class="form">
-            <ChannelSelet />
+            <ChannelSelet v-model="params.cate_id"/>
         </el-form-item>
         <el-form-item label="发布状态:" class="form">
-            <el-select  placeholder="请选择">
+            <el-select v-model="params.state"  placeholder="请选择">
                 <el-option label="已发布" value="已发布" />
                 <el-option label="草稿" value="草稿" />
             </el-select>
         </el-form-item>
         <el-form-item>
-            <el-button type="primary">搜索</el-button>
-            <el-button>重置</el-button>
-    </el-form-item>
+            <el-button type="primary" @click="search">搜索</el-button>
+            <el-button @click="reset">重置</el-button>
+        </el-form-item>
     </el-form>
 
     <!-- 表格区域 -->
@@ -68,6 +83,7 @@ const handleCurrentChange=(page)=>{
             </template>
         </el-table-column>
     </el-table>
+    <!-- 分页区域 -->
     <el-pagination
       v-model:current-page="params.pagenum"
       v-model:page-size="params.pagesize"
