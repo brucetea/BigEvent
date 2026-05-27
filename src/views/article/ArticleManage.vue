@@ -3,9 +3,11 @@ import { ref } from 'vue'
 import { Delete, Edit } from '@element-plus/icons-vue'
 import { artGetListService } from '../../api/article'
 import ChannelSelet from './components/ChannelSelet.vue'
+import ArticleEdit from './components/ArticleEdit.vue'
 
 const articleList = ref([])
 const total = ref(0)
+
 
 const params = ref({
   pagenum: 1, 
@@ -45,12 +47,19 @@ const reset = () => {
   getArticleList()
 }
 
+const articleEditRef = ref()
+const onAddArticle = () => {
+  articleEditRef.value.open({})
+}
+// const onEditArticle = (id) => {
+//   articleEditRef.value.open(id)
+// }
 </script>
 
 <template>
   <page-container title="文章管理">
     <template #extra>
-      <el-button>添加文章</el-button>
+      <el-button @click=onAddArticle>添加文章</el-button>
     </template>
 
     <!-- 表单区域 -->
@@ -97,6 +106,8 @@ const reset = () => {
       @current-change="handleCurrentChange($event)"
       style="margin-top: 20px;justify-content: flex-end;"
     />
+    <!-- 添加文章 -->
+     <ArticleEdit ref="articleEditRef"></ArticleEdit>
   </page-container>
 </template>
 
