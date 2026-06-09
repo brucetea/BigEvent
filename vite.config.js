@@ -21,5 +21,25 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  }
+  },
+  server: {
+    port: 3000,
+    proxy: {
+      '/base': {
+        target: 'https://big-event-vue-api-t.itheima.net',
+        changeOrigin: true, // 允许跨域
+        rewrite: (path) => path.replace(/^\/base/, '') // 重写路径，去掉 /api 前缀
+      }
+      // '/base/api': {
+      //   target: 'https://big-event-vue-api-t.itheima.net',
+      //   changeOrigin: true, // 允许跨域
+      //   rewrite: (path) => path.replace(/^\/base/, '') // 重写路径，去掉 /api 前缀
+      // },
+      // '/base/my': {
+      //   target: 'https://big-event-vue-api-t.itheima.net',
+      //   changeOrigin: true, // 允许跨域
+      //   rewrite: (path) => path.replace(/^\/base/, '') // 重写路径，去掉 /api 前缀
+      // }
+    }
+  } 
 })

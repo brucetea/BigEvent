@@ -17,7 +17,8 @@ const params = ref({
 })
 const getArticleList = async () => {
   const res = await artGetListService(params.value)
-  console.log(res)
+
+console.log('文章列表返回=', res)
   articleList.value = res.data.data
   total.value = res.data.total
 }
@@ -48,8 +49,9 @@ const reset = () => {
 }
 
 const articleEditRef = ref()
-const onAddArticle = () => {
-  articleEditRef.value.open({})
+const onArticle = (item) => {
+  console.log(item,11111);
+  articleEditRef.value.open(item?.id)
 }
 // const onEditArticle = (id) => {
 //   articleEditRef.value.open(id)
@@ -59,7 +61,7 @@ const onAddArticle = () => {
 <template>
   <page-container title="文章管理">
     <template #extra>
-      <el-button @click=onAddArticle>添加文章</el-button>
+      <el-button @click=onArticle>添加文章</el-button>
     </template>
 
     <!-- 表单区域 -->
@@ -86,8 +88,8 @@ const onAddArticle = () => {
         <el-table-column prop="pub_date" label="发布时间" />
         <el-table-column prop="state" label="状态" />
         <el-table-column label="操作">
-            <template #default>
-                <el-button type="primary" :icon="Edit" circle plain></el-button>
+            <template #default="scope">
+                <el-button type="primary" :icon="Edit" circle plain @click="onArticle(scope.row)"></el-button>
                 <el-button type="danger" :icon="Delete" circle plain></el-button>
             </template>
         </el-table-column>
