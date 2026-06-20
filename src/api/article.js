@@ -34,3 +34,6 @@ export const artEditService = (data) => request.put('/my/article/info', data)
 // 文章：删除文章接口
 export const artDelService = (id) =>
   request.delete('/my/article/info', { params: { id } })
+
+// 新增：上传文章
+export const artUploadService = (data) => request.post('/my/article/add', data)

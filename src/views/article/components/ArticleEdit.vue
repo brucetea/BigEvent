@@ -3,7 +3,8 @@ import { ref, reactive } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import ChannelSelet from './ChannelSelet.vue'
 import { QuillEditor } from '@vueup/vue-quill'
-import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
+import { artUploadService } from '@/api/article'
 
 const visibleDrawer = ref(false)
 const initialValues = {
@@ -13,18 +14,22 @@ const initialValues = {
   cover_img: '',
   state: ''
 }
-const params = reactive(initialValues)
+const previewUrl = ref('')
+const params = reactive({...initialValues})
 
 const drawertitle = ref('添加文章')
 
 // 图片
-const handlePictureChange = (uploadFile) =>{
-  params.cover_img = URL.createObjectURL(uploadFile.raw)
+const handlePictureChange = (uploadFile,uploadFiles) =>{
+  previewUrl.value = URL.createObjectURL(uploadFile.raw)
+  params.cover_img = uploadFile.raw
+  console.log(uploadFile,uploadFiles,params.cover_img)
 }
 const open = (id) => {
   if (!id) {
     drawertitle.value = '添加文章'
     Object.assign(params, initialValues)
+    console.log(params,2222,initialValues);
   } else {
     drawertitle.value = '编辑文章'
     // 根据id获取文章详情
@@ -45,7 +50,30 @@ const open = (id) => {
     Object.assign(params, { title, cate_id, content, cover_img, state, id })
   }
   visibleDrawer.value = true
-  console.log(index) 
+}
+
+const onSubmit = async (state) => {
+  params.state = state
+  const fd = new FormData()
+  for (let key in params) {
+    fd.append(key, params[key])
+  }
+  if (state === '已发布') {
+    await artUploadService(fd)
+    ElMessage({
+      message: 'success message.',
+      type: 'success'
+    })
+    visibleDrawer.value = false
+    // ✅ 重置表单数据（复用你已经定义好的 initialValues）
+    Object.assign(params, initialValues)
+    console.log(params,11111);
+    // ✅ 清空图片预览
+    previewUrl.value = ''
+    console.log('已发布')
+  } else if (state === '草稿') {
+    console.log('草稿')
+  }
 }
 
 defineExpose({
@@ -53,15 +81,14 @@ defineExpose({
 })
 </script>
 
-
 <template>
   <el-drawer
-      v-model="visibleDrawer"
-      :title="drawertitle"
-      :direction="direction"
-      :before-close="handleClose"
-      size="50%"
-    >
+    v-model="visibleDrawer"
+    :title="drawertitle"
+    :direction="direction"
+    :before-close="handleClose"
+    size="50%"
+  >
     <el-form>
       <el-form-item label="文章标题" prop="title">
         <el-input placeholder="请输入文章标题" v-model="params.title" />
@@ -70,13 +97,13 @@ defineExpose({
         <ChannelSelet v-model="params.cate_id"></ChannelSelet>
       </el-form-item>
       <el-form-item label="文章封面" prop="cover_img">
-        <el-upload 
+        <el-upload
           class="avatar-uploader"
           :show-file-list="false"
           :auto-upload="false"
           :on-change="handlePictureChange"
-          >
-          <img v-if="params.cover_img" :src="params.cover_img" class="avatar" />
+        >
+          <img v-if="previewUrl" :src="previewUrl" class="avatar" />
           <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
         </el-upload>
       </el-form-item>
@@ -86,12 +113,12 @@ defineExpose({
             theme="snow"
             v-model:content="params.content"
             content-type="html"
-            />
+          />
         </div>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit">发布</el-button>
-        <el-button>草稿</el-button>
+      <el-form-item class="footer">
+        <el-button @click="onSubmit('已发布')" type="primary">发布</el-button>
+        <el-button @click="onSubmit('草稿')">草稿</el-button>
       </el-form-item>
     </el-form>
   </el-drawer>
@@ -129,6 +156,9 @@ defineExpose({
     .ql-editor{
       min-height: 200px;
     }
+  }
+  .footer .el-form-item__content{
+    justify-content: end;
   }
 }
 </style>
